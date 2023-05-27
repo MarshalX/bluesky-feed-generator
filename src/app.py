@@ -30,7 +30,7 @@ signal.signal(signal.SIGINT, sigint_handler)
 
 @app.route('/')
 def index():
-    return 'Custom feed server powered by The AT Protocol SDK for Python (https://github.com/MarshalX/atproto).'
+    return 'ATProto Feed Generator powered by The AT Protocol SDK for Python (https://github.com/MarshalX/atproto).'
 
 
 @app.route('/.well-known/did.json', methods=['GET'])

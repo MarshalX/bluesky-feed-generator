@@ -6,7 +6,7 @@ from datetime import datetime
 
 from atproto.xrpc_client.models import ids
 
-from atproto import Client, models
+from atproto import AtUri, Client, models
 
 # YOUR bluesky handle
 # Ex: user.bsky.social
@@ -60,7 +60,7 @@ def main():
             avatar_data = f.read()
             avatar_blob = client.com.atproto.repo.upload_blob(avatar_data).blob
 
-    client.com.atproto.repo.put_record(models.ComAtprotoRepoPutRecord.Data(
+    response = client.com.atproto.repo.put_record(models.ComAtprotoRepoPutRecord.Data(
         repo=client.me.did,
         collection=ids.AppBskyFeedGenerator,
         rkey=RECORD_NAME,
@@ -74,6 +74,7 @@ def main():
     ))
 
     print('Successfully published!')
+    print('Service DID (put in .env):', AtUri.from_str(response.uri).hostname)
 
 
 if __name__ == '__main__':
