@@ -1,0 +1,3 @@
+#atproto==0.0.10
+peewee~=3.16.2
+Flask~=2.3.2
