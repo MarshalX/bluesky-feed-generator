@@ -4,7 +4,8 @@ from atproto import CAR, AtUri, models
 from atproto.firehose import FirehoseSubscribeReposClient, parse_subscribe_repos_message
 from atproto.xrpc_client.models import ids
 from atproto.xrpc_client.models.utils import get_or_create, is_record_type
-from database import SubscriptionState
+
+from .database import SubscriptionState
 
 if t.TYPE_CHECKING:
     from atproto.firehose import MessageFrame

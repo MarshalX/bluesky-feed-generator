@@ -1,8 +1,8 @@
 from datetime import datetime
 from typing import Optional
 
-import config
-from database import Post
+from .. import config
+from ..database import Post
 
 uri = config.WHATS_ALF_URI
 

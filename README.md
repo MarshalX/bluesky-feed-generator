@@ -1,12 +1,8 @@
-## ATProto Feed Generator
+## ATProto Feed Generator powered by [The AT Protocol SDK for Python](https://github.com/MarshalX/atproto)
 
 > Feed Generators are services that provide custom algorithms to users through the AT Protocol.
 
-Official overview: https://github.com/bluesky-social/feed-generator#overview
-
-Powered by The AT Protocol SDK for Python: https://github.com/MarshalX/atproto
-
-SDK Documentation: https://atproto.blue
+Official overview (read it first): https://github.com/bluesky-social/feed-generator#overview
 
 ### Getting Started
 
@@ -32,27 +28,26 @@ Install Python 3.7+, optionally create virtual environment.
 
 Install dependencies:
 ```shell
-pip3 install -r requirements.txt
+pip install -r requirements.txt
 ```
 
-Set `HOSTNAME` env variable (your server's domain):
-```shell
-export HOSTNAME='example.com'
-```
+Copy `.env.example` as `.env`. Fill the variables.
 
 Run development flask server:
 ```shell
-cd src
 flask run
 ```
 
-Run development debug server:
+Run development server with debug:
 ```shell
-cd src
-python __main__.py
+flask --debug run
 ```
 
-**In production, you should use production WSGI server instead! If you want to run server in many workers you should run Data Stream (Firehose) separately!**
+> **Warning**
+> In production, you should use production WSGI server instead.
+
+> **Warning**
+> If you want to run server in many workers, you should run Data Stream (Firehose) separately.
 
 Endpoints:
 - /.well-known/did.json
