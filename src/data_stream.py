@@ -3,7 +3,8 @@ import typing as t
 from atproto import CAR, AtUri, models
 from atproto.firehose import FirehoseSubscribeReposClient, parse_subscribe_repos_message
 from atproto.xrpc_client.models import ids
-from atproto.xrpc_client.models.utils import get_or_create_model, is_record_type
+from atproto.xrpc_client.models.utils import get_or_create, is_record_type
+from database import SubscriptionState
 
 if t.TYPE_CHECKING:
     from atproto.firehose import MessageFrame
@@ -35,7 +36,7 @@ def _get_ops_by_type(commit: models.ComAtprotoSyncSubscribeRepos.Commit) -> dict
             if not record_raw_data:
                 continue
 
-            record = get_or_create_model(record_raw_data)
+            record = get_or_create(record_raw_data, strict=False)
             if uri.collection == ids.AppBskyFeedLike and is_record_type(record, models.AppBskyFeedLike):
                 operation_by_type['likes']['created'].append({'record': record, **create_info})
             elif uri.collection == ids.AppBskyFeedPost and is_record_type(record, models.AppBskyFeedPost):
@@ -54,8 +55,17 @@ def _get_ops_by_type(commit: models.ComAtprotoSyncSubscribeRepos.Commit) -> dict
     return operation_by_type
 
 
-def run(operations_callback, stream_stop_event):
-    client = FirehoseSubscribeReposClient()
+def run(name, operations_callback, stream_stop_event):
+    state = SubscriptionState.select(SubscriptionState.service == name).first()
+
+    params = None
+    if state:
+        params = models.ComAtprotoSyncSubscribeRepos.Params(cursor=state.cursor)
+
+    client = FirehoseSubscribeReposClient(params)
+
+    if not state:
+        SubscriptionState.create(service=name, cursor=0)
 
     def on_message_handler(message: 'MessageFrame') -> None:
         # stop on next message if requested
@@ -66,6 +76,10 @@ def run(operations_callback, stream_stop_event):
         commit = parse_subscribe_repos_message(message)
         if not isinstance(commit, models.ComAtprotoSyncSubscribeRepos.Commit):
             return
+
+        # update stored state every ~20 events
+        if commit.seq % 20 == 0:
+            SubscriptionState.update(cursor=commit.seq).where(SubscriptionState.service == name).execute()
 
         operations_callback(_get_ops_by_type(commit))
 

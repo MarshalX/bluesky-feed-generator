@@ -13,7 +13,9 @@ from data_filter import operations_callback
 app = Flask(__name__)
 
 stream_stop_event = threading.Event()
-stream_thread = threading.Thread(target=data_stream.run, args=(operations_callback, stream_stop_event,))
+stream_thread = threading.Thread(
+    target=data_stream.run, args=(config.SERVICE_DID, operations_callback, stream_stop_event,)
+)
 stream_thread.start()
 
 

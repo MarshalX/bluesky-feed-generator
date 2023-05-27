@@ -37,7 +37,7 @@ DESCRIPTION: str = 'powered by The AT Protocol SDK for Python'
 # Ex: ./path/to/avatar.jpeg
 AVATAR_PATH: str = ''
 
-# (Optional)
+# (Optional). Only use this if you want a service did different from did:web
 SERVICE_DID: str = ''
 
 

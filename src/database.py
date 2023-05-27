@@ -19,6 +19,11 @@ class Post(BaseModel):
     indexed_at = peewee.DateTimeField(default=datetime.now)
 
 
+class SubscriptionState(BaseModel):
+    service = peewee.CharField(unique=True)
+    cursor = peewee.IntegerField()
+
+
 if db.is_closed():
     db.connect()
-    db.create_tables([Post])
+    db.create_tables([Post, SubscriptionState])
