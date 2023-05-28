@@ -6,7 +6,7 @@ from datetime import datetime
 
 from atproto.xrpc_client.models import ids
 
-from atproto import AtUri, Client, models
+from atproto import Client, models
 
 # YOUR bluesky handle
 # Ex: user.bsky.social
@@ -74,7 +74,7 @@ def main():
     ))
 
     print('Successfully published!')
-    print('Service DID (put in .env):', AtUri.from_str(response.uri).hostname)
+    print('Feed URI (put in "WHATS_ALF_URI" env var):', response.uri)
 
 
 if __name__ == '__main__':
