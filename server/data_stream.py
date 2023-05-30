@@ -5,7 +5,7 @@ from atproto.firehose import FirehoseSubscribeReposClient, parse_subscribe_repos
 from atproto.xrpc_client.models import ids
 from atproto.xrpc_client.models.utils import get_or_create, is_record_type
 
-from .database import SubscriptionState
+from server.database import SubscriptionState
 
 if t.TYPE_CHECKING:
     from atproto.firehose import MessageFrame
@@ -56,7 +56,7 @@ def _get_ops_by_type(commit: models.ComAtprotoSyncSubscribeRepos.Commit) -> dict
     return operation_by_type
 
 
-def run(name, operations_callback, stream_stop_event):
+def run(name, operations_callback, stream_stop_event=None):
     state = SubscriptionState.select(SubscriptionState.service == name).first()
 
     params = None
@@ -70,7 +70,7 @@ def run(name, operations_callback, stream_stop_event):
 
     def on_message_handler(message: 'MessageFrame') -> None:
         # stop on next message if requested
-        if stream_stop_event.is_set():
+        if stream_stop_event and stream_stop_event.is_set():
             client.stop()
             return
 

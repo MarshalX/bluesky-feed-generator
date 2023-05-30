@@ -2,13 +2,13 @@ import sys
 import signal
 import threading
 
-from . import config
-from . import data_stream
+from server import config
+from server import data_stream
 
 from flask import Flask, jsonify, request
 
-from .algos import algos
-from .data_filter import operations_callback
+from server.algos import algos
+from server.data_filter import operations_callback
 
 app = Flask(__name__)
 

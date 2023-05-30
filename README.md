@@ -11,8 +11,8 @@ Feed example: https://bsky.app/profile/did:plc:kvwvcn5iqfooopmyzvb4qzba/feed/wha
 We've set up this simple server with SQLite to store and query data. Feel free to switch this out for whichever database you prefer.
 
 Next, you will need to do two things:
-1. Implement indexing logic in `src/data_filter.py`.
-2. Implement feed generation logic in `src/algos`.
+1. Implement indexing logic in `server/data_filter.py`.
+2. Implement feed generation logic in `server/algos`.
 
 We've taken care of setting this server up with a did:web. However, you're free to switch this out for did:plc if you like - you may want to if you expect this Feed Generator to be long-standing and possibly migrating domains.
 
@@ -47,6 +47,9 @@ Run development server with debug:
 ```shell
 flask --debug run
 ```
+> **Note**
+> Duplication of data stream instances in debug mode is fine. 
+> Read warn below.
 
 > **Warning**
 > In production, you should use production WSGI server instead.

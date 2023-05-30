@@ -1,4 +1,11 @@
-from .database import db, Post
+import logging
+
+from atproto import models
+
+from server.database import db, Post
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 def operations_callback(ops: dict) -> None:
@@ -11,6 +18,12 @@ def operations_callback(ops: dict) -> None:
     posts_to_create = []
     for created_post in ops['posts']['created']:
         record = created_post['record']
+
+        # print all texts just as demo that data stream works
+        post_with_images = isinstance(record.embed, models.AppBskyEmbedImages.Main)
+        inlined_text = record.text.replace('\n', ' ')
+        logger.info(f'New post (with images: {post_with_images}): {inlined_text}')
+
         # only alf-related posts
         if 'alf' in record.text.lower():
             reply_parent = None
@@ -32,10 +45,10 @@ def operations_callback(ops: dict) -> None:
     posts_to_delete = [p['uri'] for p in ops['posts']['deleted']]
     if posts_to_delete:
         Post.delete().where(Post.uri.in_(posts_to_delete))
-        print('[DATA FILTER] Deleted:', len(posts_to_delete))
+        logger.info(f'Deleted from feed: {len(posts_to_delete)}')
 
     if posts_to_create:
         with db.atomic():
             for post_dict in posts_to_create:
                 Post.create(**post_dict)
-        print('[DATA FILTER] Added:', len(posts_to_create))
+        logger.info(f'Added to feed: {len(posts_to_create)}')
