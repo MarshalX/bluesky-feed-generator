@@ -2,7 +2,6 @@ import typing as t
 
 from atproto import CAR, AtUri, models
 from atproto.firehose import FirehoseSubscribeReposClient, parse_subscribe_repos_message
-from atproto.xrpc_client.models import ids
 from atproto.xrpc_client.models.utils import get_or_create, is_record_type
 
 from server.database import SubscriptionState
@@ -38,19 +37,19 @@ def _get_ops_by_type(commit: models.ComAtprotoSyncSubscribeRepos.Commit) -> dict
                 continue
 
             record = get_or_create(record_raw_data, strict=False)
-            if uri.collection == ids.AppBskyFeedLike and is_record_type(record, models.AppBskyFeedLike):
+            if uri.collection == models.ids.AppBskyFeedLike and is_record_type(record, models.AppBskyFeedLike):
                 operation_by_type['likes']['created'].append({'record': record, **create_info})
-            elif uri.collection == ids.AppBskyFeedPost and is_record_type(record, models.AppBskyFeedPost):
+            elif uri.collection == models.ids.AppBskyFeedPost and is_record_type(record, models.AppBskyFeedPost):
                 operation_by_type['posts']['created'].append({'record': record, **create_info})
-            elif uri.collection == ids.AppBskyGraphFollow and is_record_type(record, models.AppBskyGraphFollow):
+            elif uri.collection == models.ids.AppBskyGraphFollow and is_record_type(record, models.AppBskyGraphFollow):
                 operation_by_type['follows']['created'].append({'record': record, **create_info})
 
         if op.action == 'delete':
-            if uri.collection == ids.AppBskyFeedLike:
+            if uri.collection == models.ids.AppBskyFeedLike:
                 operation_by_type['likes']['deleted'].append({'uri': str(uri)})
-            if uri.collection == ids.AppBskyFeedPost:
+            if uri.collection == models.ids.AppBskyFeedPost:
                 operation_by_type['posts']['deleted'].append({'uri': str(uri)})
-            if uri.collection == ids.AppBskyGraphFollow:
+            if uri.collection == models.ids.AppBskyGraphFollow:
                 operation_by_type['follows']['deleted'].append({'uri': str(uri)})
 
     return operation_by_type
