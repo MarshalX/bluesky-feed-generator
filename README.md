@@ -4,8 +4,6 @@
 
 Official overview (read it first): https://github.com/bluesky-social/feed-generator#overview
 
-Feed example: https://bsky.app/profile/did:plc:kvwvcn5iqfooopmyzvb4qzba/feed/whats-alf
-
 ### Getting Started
 
 We've set up this simple server with SQLite to store and query data. Feel free to switch this out for whichever database you prefer.
