@@ -2,7 +2,7 @@ import typing as t
 
 from atproto import CAR, AtUri, models
 from atproto.firehose import FirehoseSubscribeReposClient, parse_subscribe_repos_message
-from atproto.xrpc_client.models.utils import get_or_create, is_record_type
+from atproto.xrpc_client.models import get_or_create, is_record_type
 
 from server.database import SubscriptionState
 
