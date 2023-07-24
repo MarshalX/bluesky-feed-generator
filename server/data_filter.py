@@ -1,11 +1,7 @@
-import logging
-
 from atproto import models
 
+from server.logger import logger
 from server.database import db, Post
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 def operations_callback(ops: dict) -> None:

@@ -1,9 +1,12 @@
 import typing as t
 
 from atproto import CAR, AtUri, models
+from atproto.exceptions import FirehoseError
 from atproto.firehose import FirehoseSubscribeReposClient, parse_subscribe_repos_message
 from atproto.xrpc_client.models import get_or_create, is_record_type
+from atproto.xrpc_client.models.common import XrpcError
 
+from server.logger import logger
 from server.database import SubscriptionState
 
 if t.TYPE_CHECKING:
@@ -56,6 +59,20 @@ def _get_ops_by_type(commit: models.ComAtprotoSyncSubscribeRepos.Commit) -> dict
 
 
 def run(name, operations_callback, stream_stop_event=None):
+    while True:
+        try:
+            _run(name, operations_callback, stream_stop_event)
+        except FirehoseError as e:
+            if e.__context__ and e.__context__.args:
+                xrpc_error = e.__context__.args[0]
+                if isinstance(xrpc_error, XrpcError) and xrpc_error.error == 'ConsumerTooSlow':
+                    logger.warn('Reconnecting to Firehose due to ConsumerTooSlow...')
+                    continue
+
+            raise e
+
+
+def _run(name, operations_callback, stream_stop_event=None):
     state = SubscriptionState.select(SubscriptionState.service == name).first()
 
     params = None
