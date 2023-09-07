@@ -2,10 +2,6 @@
 # YOU MUST INSTALL ATPROTO SDK
 # pip3 install atproto
 
-from datetime import datetime
-
-from atproto.xrpc_client.models import ids
-
 from atproto import Client, models
 
 # YOUR bluesky handle
@@ -62,14 +58,14 @@ def main():
 
     response = client.com.atproto.repo.put_record(models.ComAtprotoRepoPutRecord.Data(
         repo=client.me.did,
-        collection=ids.AppBskyFeedGenerator,
+        collection=models.ids.AppBskyFeedGenerator,
         rkey=RECORD_NAME,
         record=models.AppBskyFeedGenerator.Main(
             did=feed_did,
-            displayName=DISPLAY_NAME,
+            display_name=DISPLAY_NAME,
             description=DESCRIPTION,
             avatar=avatar_blob,
-            createdAt=datetime.now().isoformat(),
+            created_at=client.get_current_time_iso(),
         )
     ))
 
