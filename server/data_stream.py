@@ -59,7 +59,7 @@ def _get_ops_by_type(commit: models.ComAtprotoSyncSubscribeRepos.Commit) -> dict
 
 
 def run(name, operations_callback, stream_stop_event=None):
-    while stream_stop_event and not stream_stop_event.is_set():
+    while stream_stop_event is None or not stream_stop_event.is_set():
         try:
             _run(name, operations_callback, stream_stop_event)
         except FirehoseError as e:
