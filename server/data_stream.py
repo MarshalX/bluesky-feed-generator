@@ -79,7 +79,7 @@ def _run(name, operations_callback, stream_stop_event=None):
     if state:
         params = models.ComAtprotoSyncSubscribeRepos.Params(cursor=state.cursor)
 
-    client = FirehoseSubscribeReposClient(params)
+    client = FirehoseSubscribeReposClient(params,base_uri='wss://bsky.network/xrpc')
 
     if not state:
         SubscriptionState.create(service=name, cursor=0)
@@ -91,6 +91,8 @@ def _run(name, operations_callback, stream_stop_event=None):
             return
 
         commit = parse_subscribe_repos_message(message)
+        if not commit.blocks:
+            return
         if not isinstance(commit, models.ComAtprotoSyncSubscribeRepos.Commit):
             return
 
