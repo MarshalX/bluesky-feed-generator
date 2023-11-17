@@ -91,9 +91,9 @@ def _run(name, operations_callback, stream_stop_event=None):
             return
 
         commit = parse_subscribe_repos_message(message)
-        if not commit.blocks:
-            return
         if not isinstance(commit, models.ComAtprotoSyncSubscribeRepos.Commit):
+            return
+        if not commit.blocks:
             return
 
         # update stored state every ~20 events
