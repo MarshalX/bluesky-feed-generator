@@ -16,7 +16,7 @@ class Post(BaseModel):
     cid = peewee.CharField()
     reply_parent = peewee.CharField(null=True, default=None)
     reply_root = peewee.CharField(null=True, default=None)
-    indexed_at = peewee.DateTimeField(default=datetime.now)
+    indexed_at = peewee.DateTimeField(default=datetime.utcnow)
 
 
 class SubscriptionState(BaseModel):
