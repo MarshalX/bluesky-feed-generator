@@ -1,13 +1,12 @@
 import typing as t
 
-from atproto import CAR, AtUri, models
+from atproto import AtUri, CAR, models
 from atproto.exceptions import FirehoseError
 from atproto.firehose import FirehoseSubscribeReposClient, parse_subscribe_repos_message
 from atproto.xrpc_client.models import get_or_create, is_record_type
-from atproto.xrpc_client.models.common import XrpcError
 
-from server.logger import logger
 from server.database import SubscriptionState
+from server.logger import logger
 
 if t.TYPE_CHECKING:
     from atproto.firehose import MessageFrame
@@ -63,12 +62,7 @@ def run(name, operations_callback, stream_stop_event=None):
         try:
             _run(name, operations_callback, stream_stop_event)
         except FirehoseError as e:
-            if e.args:
-                xrpc_error = e.args[0]
-                if isinstance(xrpc_error, XrpcError) and xrpc_error.error == 'ConsumerTooSlow':
-                    logger.warn('Reconnecting to Firehose due to ConsumerTooSlow...')
-                    continue
-
+            # here we can handle different errors to reconnect to firehose
             raise e
 
 
@@ -79,7 +73,7 @@ def _run(name, operations_callback, stream_stop_event=None):
     if state:
         params = models.ComAtprotoSyncSubscribeRepos.Params(cursor=state.cursor)
 
-    client = FirehoseSubscribeReposClient(params,base_uri='wss://bsky.network/xrpc')
+    client = FirehoseSubscribeReposClient(params)
 
     if not state:
         SubscriptionState.create(service=name, cursor=0)
@@ -93,14 +87,15 @@ def _run(name, operations_callback, stream_stop_event=None):
         commit = parse_subscribe_repos_message(message)
         if not isinstance(commit, models.ComAtprotoSyncSubscribeRepos.Commit):
             return
-        if not commit.blocks:
-            return
 
         # update stored state every ~20 events
         if commit.seq % 20 == 0:
             logger.info(f'Updated cursor for {name} to {commit.seq}')
             client.update_params(models.ComAtprotoSyncSubscribeRepos.Params(cursor=commit.seq))
             SubscriptionState.update(cursor=commit.seq).where(SubscriptionState.service == name).execute()
+
+        if not commit.blocks:
+            return
 
         operations_callback(_get_ops_by_type(commit))
 
