@@ -1,15 +1,8 @@
-import typing as t
-
-from atproto import AtUri, CAR, models
+from atproto import AtUri, CAR, firehose_models, FirehoseSubscribeReposClient, models, parse_subscribe_repos_message
 from atproto.exceptions import FirehoseError
-from atproto.firehose import FirehoseSubscribeReposClient, parse_subscribe_repos_message
-from atproto.xrpc_client.models import get_or_create, is_record_type
 
 from server.database import SubscriptionState
 from server.logger import logger
-
-if t.TYPE_CHECKING:
-    from atproto.firehose import MessageFrame
 
 
 def _get_ops_by_type(commit: models.ComAtprotoSyncSubscribeRepos.Commit) -> dict:  # noqa: C901
@@ -38,12 +31,15 @@ def _get_ops_by_type(commit: models.ComAtprotoSyncSubscribeRepos.Commit) -> dict
             if not record_raw_data:
                 continue
 
-            record = get_or_create(record_raw_data, strict=False)
-            if uri.collection == models.ids.AppBskyFeedLike and is_record_type(record, models.AppBskyFeedLike):
+            record = models.get_or_create(record_raw_data, strict=False)
+            if (uri.collection == models.ids.AppBskyFeedLike
+                    and models.is_record_type(record, models.AppBskyFeedLike)):
                 operation_by_type['likes']['created'].append({'record': record, **create_info})
-            elif uri.collection == models.ids.AppBskyFeedPost and is_record_type(record, models.AppBskyFeedPost):
+            elif (uri.collection == models.ids.AppBskyFeedPost
+                  and models.is_record_type(record, models.AppBskyFeedPost)):
                 operation_by_type['posts']['created'].append({'record': record, **create_info})
-            elif uri.collection == models.ids.AppBskyGraphFollow and is_record_type(record, models.AppBskyGraphFollow):
+            elif (uri.collection == models.ids.AppBskyGraphFollow
+                  and models.is_record_type(record, models.AppBskyGraphFollow)):
                 operation_by_type['follows']['created'].append({'record': record, **create_info})
 
         if op.action == 'delete':
@@ -78,7 +74,7 @@ def _run(name, operations_callback, stream_stop_event=None):
     if not state:
         SubscriptionState.create(service=name, cursor=0)
 
-    def on_message_handler(message: 'MessageFrame') -> None:
+    def on_message_handler(message: firehose_models.MessageFrame) -> None:
         # stop on next message if requested
         if stream_stop_event and stream_stop_event.is_set():
             client.stop()
