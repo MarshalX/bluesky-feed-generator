@@ -73,7 +73,7 @@ def get_feed_skeleton():
 
     # Example of how to check auth if giving user-specific results:
     """
-    from auth import AuthorizationError, validate_auth
+    from server.auth import AuthorizationError, validate_auth
     try:
         requester_did = validate_auth(request)
     except AuthorizationError:
