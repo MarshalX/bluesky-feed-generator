@@ -54,13 +54,13 @@ def main():
     if AVATAR_PATH:
         with open(AVATAR_PATH, 'rb') as f:
             avatar_data = f.read()
-            avatar_blob = client.com.atproto.repo.upload_blob(avatar_data).blob
+            avatar_blob = client.upload_blob(avatar_data).blob
 
     response = client.com.atproto.repo.put_record(models.ComAtprotoRepoPutRecord.Data(
         repo=client.me.did,
         collection=models.ids.AppBskyFeedGenerator,
         rkey=RECORD_NAME,
-        record=models.AppBskyFeedGenerator.Main(
+        record=models.AppBskyFeedGenerator.Record(
             did=feed_did,
             display_name=DISPLAY_NAME,
             description=DESCRIPTION,
