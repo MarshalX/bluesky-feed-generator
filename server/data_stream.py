@@ -1,25 +1,28 @@
+from collections import defaultdict
+
 from atproto import AtUri, CAR, firehose_models, FirehoseSubscribeReposClient, models, parse_subscribe_repos_message
 from atproto.exceptions import FirehoseError
 
 from server.database import SubscriptionState
 from server.logger import logger
 
+_INTERESTED_RECORDS = {
+    models.AppBskyFeedLike: models.ids.AppBskyFeedLike,
+    models.AppBskyFeedPost: models.ids.AppBskyFeedPost,
+    models.AppBskyGraphFollow: models.ids.AppBskyGraphFollow,
+}
 
-def _get_ops_by_type(commit: models.ComAtprotoSyncSubscribeRepos.Commit) -> dict:  # noqa: C901
-    operation_by_type = {
-        'posts': {'created': [], 'deleted': []},
-        'reposts': {'created': [], 'deleted': []},
-        'likes': {'created': [], 'deleted': []},
-        'follows': {'created': [], 'deleted': []},
-    }
+
+def _get_ops_by_type(commit: models.ComAtprotoSyncSubscribeRepos.Commit) -> defaultdict:
+    operation_by_type = defaultdict(lambda: {'created': [], 'deleted': []})
 
     car = CAR.from_bytes(commit.blocks)
     for op in commit.ops:
-        uri = AtUri.from_str(f'at://{commit.repo}/{op.path}')
-
         if op.action == 'update':
-            # not supported yet
+            # we are not interested in updates
             continue
+
+        uri = AtUri.from_str(f'at://{commit.repo}/{op.path}')
 
         if op.action == 'create':
             if not op.cid:
@@ -32,23 +35,13 @@ def _get_ops_by_type(commit: models.ComAtprotoSyncSubscribeRepos.Commit) -> dict
                 continue
 
             record = models.get_or_create(record_raw_data, strict=False)
-            if (uri.collection == models.ids.AppBskyFeedLike
-                    and models.is_record_type(record, models.AppBskyFeedLike)):
-                operation_by_type['likes']['created'].append({'record': record, **create_info})
-            elif (uri.collection == models.ids.AppBskyFeedPost
-                  and models.is_record_type(record, models.AppBskyFeedPost)):
-                operation_by_type['posts']['created'].append({'record': record, **create_info})
-            elif (uri.collection == models.ids.AppBskyGraphFollow
-                  and models.is_record_type(record, models.AppBskyGraphFollow)):
-                operation_by_type['follows']['created'].append({'record': record, **create_info})
+            for record_type, record_nsid in _INTERESTED_RECORDS.items():
+                if uri.collection == record_nsid and models.is_record_type(record, record_type):
+                    operation_by_type[record_nsid]['created'].append({'record': record, **create_info})
+                    break
 
         if op.action == 'delete':
-            if uri.collection == models.ids.AppBskyFeedLike:
-                operation_by_type['likes']['deleted'].append({'uri': str(uri)})
-            if uri.collection == models.ids.AppBskyFeedPost:
-                operation_by_type['posts']['deleted'].append({'uri': str(uri)})
-            if uri.collection == models.ids.AppBskyGraphFollow:
-                operation_by_type['follows']['deleted'].append({'uri': str(uri)})
+            operation_by_type[uri.collection]['deleted'].append({'uri': str(uri)})
 
     return operation_by_type
 
