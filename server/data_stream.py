@@ -63,7 +63,7 @@ def run(name, operations_callback, stream_stop_event=None):
 
 
 def _run(name, operations_callback, stream_stop_event=None):
-    state = SubscriptionState.select(SubscriptionState.service == name).first()
+    state = SubscriptionState.get_or_none(SubscriptionState.service == name)
 
     params = None
     if state:
