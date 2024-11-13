@@ -20,7 +20,7 @@ class Post(BaseModel):
 
 class SubscriptionState(BaseModel):
     service = peewee.CharField(unique=True)
-    cursor = peewee.IntegerField()
+    cursor = peewee.BigIntegerField()
 
 
 if db.is_closed():
