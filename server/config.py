@@ -1,5 +1,9 @@
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 SERVICE_DID = os.environ.get('SERVICE_DID', None)
 HOSTNAME = os.environ.get('HOSTNAME', None)
 
@@ -10,7 +14,7 @@ if SERVICE_DID is None:
     SERVICE_DID = f'did:web:{HOSTNAME}'
 
 
-WHATS_ALF_URI = os.environ.get('WHATS_ALF_URI')
-if WHATS_ALF_URI is None:
+FEED_URI = os.environ.get('FEED_URI')
+if FEED_URI is None:
     raise RuntimeError('Publish your feed first (run publish_feed.py) to obtain Feed URI. '
-                       'Set this URI to "WHATS_ALF_URI" environment variable.')
+                       'Set this URI to "FEED_URI" environment variable.')

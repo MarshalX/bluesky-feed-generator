@@ -34,7 +34,7 @@ pip install -r requirements.txt
 Copy `.env.example` as `.env`. Fill the variables.
 
 > **Note**
-> To get value for "WHATS_ALF_URI" you should publish the feed first. 
+> To get value for "FEED_URI" you should publish the feed first. 
 
 Run development flask server:
 ```shell
