@@ -4,7 +4,7 @@ from typing import Optional
 from server import config
 from server.database import Post
 
-uri = config.WHATS_ALF_URI
+uri = config.FEED_URI
 CURSOR_EOF = 'eof'
 
 
