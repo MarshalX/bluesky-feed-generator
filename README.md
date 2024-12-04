@@ -42,20 +42,20 @@ To run a development Flask server:
 flask run
 ```
 
-To run a development server with debug:
-
-```shell
-flask --debug run
-```
-
-**Note**: Duplication of data stream instances in debug mode is fine. Read the warnings below.
-
-**Warning** In production, you should use production WSGI server such as [`waitress`](https://flask.palletsprojects.com/en/stable/deploying/waitress/) behind a reverse proxy such as NGINX instead.
+**Warning** The Flask development server is not designed for production use. In production, you should use production WSGI server such as [`waitress`](https://flask.palletsprojects.com/en/stable/deploying/waitress/) behind a reverse proxy such as NGINX instead.
 
 ```shell
 pip install waitress
 waitress-serve --listen=127.0.0.1:8080 server.app:app
 ```
+
+To run a development server with debugging:
+
+```shell
+flask --debug run
+```
+
+**Note**: Duplication of data stream instances in debug mode is fine.
 
 **Warning**: If you want to run server in many workers, you should run Data Stream (Firehose) separately.
 
