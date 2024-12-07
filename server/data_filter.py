@@ -1,9 +1,20 @@
+import datetime
+
 from collections import defaultdict
 
 from atproto import models
 
 from server.logger import logger
 from server.database import db, Post
+
+
+def is_archive_record(record):
+    archived_threshold = datetime.timedelta(minutes=5)
+    created_at = datetime.datetime.fromisoformat(record.created_at)
+    now = datetime.datetime.now(datetime.UTC)
+
+    return now - created_at >= archived_threshold
+
 
 
 def operations_callback(ops: defaultdict) -> None:
@@ -29,8 +40,8 @@ def operations_callback(ops: defaultdict) -> None:
             f': {inlined_text}'
         )
 
-        # only alf-related posts
-        if 'alf' in record.text.lower():
+        # only alf-related posts that are not archive posts
+        if 'alf' in record.text.lower() and not is_archive_record(record):
             reply_root = reply_parent = None
             if record.reply:
                 reply_root = record.reply.root.uri
