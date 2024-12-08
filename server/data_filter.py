@@ -22,7 +22,7 @@ def is_archive_record(record):
     created_at = datetime.datetime.fromisoformat(record.created_at)
     now = datetime.datetime.now(datetime.UTC)
 
-    return now - created_at >= archived_threshold
+    return now - created_at > archived_threshold
 
 
 
