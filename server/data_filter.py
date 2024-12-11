@@ -49,8 +49,8 @@ def operations_callback(ops: defaultdict) -> None:
             f': {inlined_text}'
         )
 
-        # only alf-related posts that are not archive posts
-        if 'alf' in record.text.lower():
+        # only python-related posts
+        if 'python' in record.text.lower():
             reply_root = reply_parent = None
             if record.reply:
                 reply_root = record.reply.root.uri

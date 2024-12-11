@@ -7,9 +7,9 @@ from server.logger import logger
 
 load_dotenv()
 
-SERVICE_DID = os.environ.get('SERVICE_DID', None)
-HOSTNAME = os.environ.get('HOSTNAME', None)
-FLASK_RUN_FROM_CLI = os.environ.get('FLASK_RUN_FROM_CLI', None)
+SERVICE_DID = os.environ.get('SERVICE_DID')
+HOSTNAME = os.environ.get('HOSTNAME')
+FLASK_RUN_FROM_CLI = os.environ.get('FLASK_RUN_FROM_CLI')
 
 if FLASK_RUN_FROM_CLI:
     logger.setLevel(logging.DEBUG)
