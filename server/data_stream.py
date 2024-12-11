@@ -36,6 +36,9 @@ def _get_ops_by_type(commit: models.ComAtprotoSyncSubscribeRepos.Commit) -> defa
                 continue
 
             record = models.get_or_create(record_raw_data, strict=False)
+            if record is None:  # unknown record (out of bsky lexicon)
+                continue
+
             for record_type, record_nsid in _INTERESTED_RECORDS.items():
                 if uri.collection == record_nsid and models.is_record_type(record, record_type):
                     operation_by_type[record_nsid]['created'].append({'record': record, **create_info})
@@ -79,8 +82,8 @@ def _run(name, operations_callback, stream_stop_event=None):
         if not isinstance(commit, models.ComAtprotoSyncSubscribeRepos.Commit):
             return
 
-        # update stored state every ~20 events
-        if commit.seq % 20 == 0:
+        # update stored state every ~1k events
+        if commit.seq % 1000 == 0:  # lower value could lead to performance issues
             logger.debug(f'Updated cursor for {name} to {commit.seq}')
             client.update_params(models.ComAtprotoSyncSubscribeRepos.Params(cursor=commit.seq))
             SubscriptionState.update(cursor=commit.seq).where(SubscriptionState.service == name).execute()
