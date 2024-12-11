@@ -1,9 +1,48 @@
+import datetime
+import os
+
 from collections import defaultdict
 
 from atproto import models
 
 from server.logger import logger
 from server.database import db, Post
+
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
+
+def is_archive_post(record):
+    # Sometimes users will import old posts from Twitter/X which con flood a feed with
+    # old posts. Unfortunately, the only way to test for this is to look an old
+    # created_at date. However, there are other reasons why a post might have an old
+    # date, such as firehose or firehose consumer outages. It is up to you, the feed
+    # creator to weigh the pros and cons, amd and optionally include this function in
+    # your filter conditions, and adjust the threshold to your liking.
+    #
+    # See https://github.com/MarshalX/bluesky-feed-generator/pull/21
+
+    archived_threshold = datetime.timedelta(days=1)
+    created_at = datetime.datetime.fromisoformat(record.created_at)
+    now = datetime.datetime.now(datetime.UTC)
+
+    return now - created_at > archived_threshold
+
+
+def is_enabled(setting: str|None) -> bool:
+    if setting is None:
+        return False
+    return setting.lower() in ["true", "yes", "y"]
+
+
+def ignore_post(record):
+    if is_enabled(os.environ.get("IGNORE_ARCHIVED_POSTS")) and is_archive_post(record):
+        return True
+    if is_enabled(os.environ.get("IGNORE_REPLY_POSTS")) and record.reply:
+        return True
+    return False
 
 
 def operations_callback(ops: defaultdict) -> None:
@@ -30,7 +69,7 @@ def operations_callback(ops: defaultdict) -> None:
         )
 
         # only python-related posts
-        if 'python' in record.text.lower():
+        if 'python' in record.text.lower() and not ignore_post(record):
             reply_root = reply_parent = None
             if record.reply:
                 reply_root = record.reply.root.uri
