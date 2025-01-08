@@ -22,6 +22,6 @@ if SERVICE_DID is None:
 
 
 FEED_URI = os.environ.get('FEED_URI')
-if FEED_URI is None:
+if not FEED_URI:
     raise RuntimeError('Publish your feed first (run publish_feed.py) to obtain Feed URI. '
                        'Set this URI to "FEED_URI" environment variable.')
