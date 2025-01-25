@@ -28,9 +28,11 @@ def is_archive_post(record: 'models.AppBskyFeedPost.Record') -> bool:
 
 def should_ignore_post(record: 'models.AppBskyFeedPost.Record') -> bool:
     if config.IGNORE_ARCHIVED_POSTS and is_archive_post(record):
+        logger.debug(f'Ignoring archived post: {record.uri}')
         return True
 
     if config.IGNORE_REPLY_POSTS and record.reply:
+        logger.debug(f'Ignoring reply post: {record.uri}')
         return True
 
     return False
@@ -48,14 +50,17 @@ def operations_callback(ops: defaultdict) -> None:
         author = created_post['author']
         record = created_post['record']
 
-        # print all texts just as demo that data stream works
         post_with_images = isinstance(record.embed, models.AppBskyEmbedImages.Main)
+        post_with_video = isinstance(record.embed, models.AppBskyEmbedVideo.Main)
         inlined_text = record.text.replace('\n', ' ')
+
+        # print all texts just as demo that data stream works
         logger.debug(
             f'NEW POST '
             f'[CREATED_AT={record.created_at}]'
             f'[AUTHOR={author}]'
             f'[WITH_IMAGE={post_with_images}]'
+            f'[WITH_VIDEO={post_with_video}]'
             f': {inlined_text}'
         )
 
