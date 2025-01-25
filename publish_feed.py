@@ -9,6 +9,19 @@ from atproto import Client, models
 
 load_dotenv()
 
+def _get_bool_env_var(value: str) -> bool:
+    # Helper function to convert string to bool
+
+    if value is None:
+        return False
+
+    normalized_value = value.strip().lower()
+    if normalized_value in {'1', 'true', 't', 'yes', 'y'}:
+        return True
+
+    return False
+
+
 # YOUR bluesky handle
 # Ex: user.bsky.social
 HANDLE: str = os.environ.get('HANDLE')
@@ -41,6 +54,11 @@ AVATAR_PATH: str = os.environ.get('AVATAR_PATH')
 # (Optional). Only use this if you want a service did different from did:web
 SERVICE_DID: str = os.environ.get('SERVICE_DID')
 
+# (Optional). If your feed accepts interactions from clients
+ACCEPTS_INTERACTIONS: bool = _get_bool_env_var(os.environ.get('ACCEPTS_INTERACTIONS'))
+
+# (Optional). If your feed is a video feed
+IS_VIDEO_FEED: bool = _get_bool_env_var(os.environ.get('IS_VIDEO_FEED'))
 
 # -------------------------------------
 # NO NEED TO TOUCH ANYTHING BELOW HERE
@@ -68,8 +86,10 @@ def main():
         record=models.AppBskyFeedGenerator.Record(
             did=feed_did,
             display_name=DISPLAY_NAME,
+            accepts_interactions=ACCEPTS_INTERACTIONS,
             description=DESCRIPTION,
             avatar=avatar_blob,
+            content_mode='app.bsky.feed.defs#contentModeVideo' if IS_VIDEO_FEED else None,
             created_at=client.get_current_time_iso(),
         )
     ))
