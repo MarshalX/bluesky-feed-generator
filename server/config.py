@@ -14,10 +14,10 @@ FLASK_RUN_FROM_CLI = os.environ.get('FLASK_RUN_FROM_CLI')
 if FLASK_RUN_FROM_CLI:
     logger.setLevel(logging.DEBUG)
 
-if HOSTNAME is None:
+if not HOSTNAME:
     raise RuntimeError('You should set "HOSTNAME" environment variable first.')
 
-if SERVICE_DID is None:
+if not SERVICE_DID:
     SERVICE_DID = f'did:web:{HOSTNAME}'
 
 
