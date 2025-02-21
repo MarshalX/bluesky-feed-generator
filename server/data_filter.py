@@ -28,11 +28,9 @@ def is_archive_post(record: 'models.AppBskyFeedPost.Record') -> bool:
 
 def should_ignore_post(record: 'models.AppBskyFeedPost.Record') -> bool:
     if config.IGNORE_ARCHIVED_POSTS and is_archive_post(record):
-        logger.debug(f'Ignoring archived post: {record.uri}')
         return True
 
     if config.IGNORE_REPLY_POSTS and record.reply:
-        logger.debug(f'Ignoring reply post: {record.uri}')
         return True
 
     return False
