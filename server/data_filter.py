@@ -26,13 +26,16 @@ def is_archive_post(record: 'models.AppBskyFeedPost.Record') -> bool:
     return now - created_at > archived_threshold
 
 
-def should_ignore_post(record: 'models.AppBskyFeedPost.Record') -> bool:
+def should_ignore_post(created_post: dict) -> bool:
+    record = created_post['record']
+    uri = created_post['uri']
+
     if config.IGNORE_ARCHIVED_POSTS and is_archive_post(record):
-        logger.debug(f'Ignoring archived post: {record.uri}')
+        logger.debug(f'Ignoring archived post: {uri}')
         return True
 
     if config.IGNORE_REPLY_POSTS and record.reply:
-        logger.debug(f'Ignoring reply post: {record.uri}')
+        logger.debug(f'Ignoring reply post: {uri}')
         return True
 
     return False
@@ -64,7 +67,7 @@ def operations_callback(ops: defaultdict) -> None:
             f': {inlined_text}'
         )
 
-        if should_ignore_post(record):
+        if should_ignore_post(created_post):
             continue
 
         # only python-related posts
