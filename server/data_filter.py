@@ -46,7 +46,7 @@ def operations_callback(ops: defaultdict) -> None:
     # After our feed alg we can save posts into our DB
     # Also, we should process deleted posts to remove them from our DB and keep it in sync
 
-    # for example, let's create our custom feed that will contain all posts that contains alf related text
+    # for example, let's create our custom feed that will contain all posts that contains 'python' related text
 
     posts_to_create = []
     for created_post in ops[models.ids.AppBskyFeedPost]['created']:
