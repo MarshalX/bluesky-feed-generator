@@ -1,6 +1,6 @@
 import logging
 
-from app import app
+from server.app import app
 from server.logger import logger
 
 if __name__ == '__main__':

@@ -21,7 +21,7 @@ def is_archive_post(record: 'models.AppBskyFeedPost.Record') -> bool:
 
     archived_threshold = datetime.timedelta(days=1)
     created_at = datetime.datetime.fromisoformat(record.created_at)
-    now = datetime.datetime.now(datetime.UTC)
+    now = datetime.datetime.now(datetime.timezone.utc)
 
     return now - created_at > archived_threshold
 
@@ -93,6 +93,5 @@ def operations_callback(ops: defaultdict) -> None:
 
     if posts_to_create:
         with db.atomic():
-            for post_dict in posts_to_create:
-                Post.create(**post_dict)
+            Post.insert_many(posts_to_create).execute()
         logger.debug(f'Added to feed: {len(posts_to_create)}')

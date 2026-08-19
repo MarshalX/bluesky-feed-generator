@@ -9,7 +9,7 @@ CURSOR_EOF = 'eof'
 
 
 def handler(cursor: Optional[str], limit: int) -> dict:
-    posts = Post.select().order_by(Post.cid.desc()).order_by(Post.indexed_at.desc()).limit(limit)
+    posts = Post.select().order_by(Post.indexed_at.desc(), Post.cid.desc()).limit(limit)
 
     if cursor:
         if cursor == CURSOR_EOF:
@@ -30,7 +30,7 @@ def handler(cursor: Optional[str], limit: int) -> dict:
     cursor = CURSOR_EOF
     last_post = posts[-1] if posts else None
     if last_post:
-        cursor = f'{int(last_post.indexed_at.timestamp() * 1000)}::{last_post.cid}'
+        cursor = f'{round(last_post.indexed_at.timestamp() * 1000)}::{last_post.cid}'
 
     return {
         'cursor': cursor,

@@ -1,8 +1,13 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 import peewee
 
 db = peewee.SqliteDatabase('feed_database.db')
+
+
+def _utc_now() -> datetime:
+    now = datetime.now(timezone.utc)
+    return now.replace(tzinfo=None, microsecond=now.microsecond // 1000 * 1000)
 
 
 class BaseModel(peewee.Model):
@@ -15,7 +20,7 @@ class Post(BaseModel):
     cid = peewee.CharField()
     reply_parent = peewee.CharField(null=True, default=None)
     reply_root = peewee.CharField(null=True, default=None)
-    indexed_at = peewee.DateTimeField(default=datetime.utcnow)
+    indexed_at = peewee.DateTimeField(default=_utc_now)
 
 
 class SubscriptionState(BaseModel):

@@ -1,7 +1,8 @@
 from atproto import DidInMemoryCache, IdResolver, verify_jwt
-from atproto.exceptions import TokenInvalidSignatureError
+from atproto.exceptions import InvalidTokenError
 from flask import Request
 
+from server import config
 
 _CACHE = DidInMemoryCache()
 _ID_RESOLVER = IdResolver(cache=_CACHE)
@@ -12,6 +13,11 @@ _AUTHORIZATION_HEADER_VALUE_PREFIX = 'Bearer '
 
 class AuthorizationError(Exception):
     ...
+
+
+def _parse_request_nsid(request: 'Request') -> str:
+    """Extract the NSID of the called XRPC method from the request path (``/xrpc/<nsid>``)."""
+    return request.path.rsplit('/', 1)[-1]
 
 
 def validate_auth(request: 'Request') -> str:
@@ -36,6 +42,14 @@ def validate_auth(request: 'Request') -> str:
     jwt = auth_header[len(_AUTHORIZATION_HEADER_VALUE_PREFIX) :].strip()
 
     try:
-        return verify_jwt(jwt, _ID_RESOLVER.did.resolve_atproto_key).iss
-    except TokenInvalidSignatureError as e:
-        raise AuthorizationError('Invalid signature') from e
+        # "own_did" binds the token to this service by checking the "aud" claim.
+        payload = verify_jwt(jwt, _ID_RESOLVER.did.resolve_atproto_key, own_did=config.SERVICE_DID)
+    except InvalidTokenError as e:
+        raise AuthorizationError(f'Invalid token: {e}') from e
+
+    # The "lxm" claim binds the token to a single XRPC method
+    nsid = _parse_request_nsid(request)
+    if getattr(payload, 'lxm', None) != nsid:
+        raise AuthorizationError(f'Token is not bound to the "{nsid}" method')
+
+    return payload.iss

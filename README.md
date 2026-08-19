@@ -24,9 +24,14 @@ To update your feed's display data (name, avatar, description, etc.), just updat
 
 After successfully running the script, you should be able to see your feed from within the app, as well as share it by embedding a link in a post (similar to a quote post).
 
+## Unpublishing your feed
+
+To remove your feed from the network, run `python unpublish_feed.py`. It deletes the record named
+`RECORD_NAME` from your repository. **Any likes that your feed has will be lost.**
+
 ## Running the Server
 
-Install Python 3.7+.
+Install Python 3.9+.
 
 Run `setupvenv.sh` to setup a virtual environment and install the dependencies:
 
