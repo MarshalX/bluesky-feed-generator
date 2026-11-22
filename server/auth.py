@@ -1,10 +1,52 @@
+import threading
+import typing as t
+from collections import OrderedDict
+
 from atproto import DidInMemoryCache, IdResolver, verify_jwt
-from atproto.exceptions import InvalidTokenError
+from atproto.exceptions import AtProtocolError
 from flask import Request
 
 from server import config
 
-_CACHE = DidInMemoryCache()
+if t.TYPE_CHECKING:
+    from atproto_core.did_doc import DidDocument
+    from atproto_identity.cache.models import CachedDidResult
+
+_CACHE_MAX_ENTRIES = 10_000
+
+
+class _BoundedDidCache(DidInMemoryCache):
+    """In-memory DID cache with LRU eviction."""
+
+    def __init__(self, max_entries: int, *args: t.Any, **kwargs: t.Any) -> None:
+        super().__init__(*args, **kwargs)
+        self._cache: OrderedDict = OrderedDict()
+        self._max_entries = max_entries
+        self._lock = threading.Lock()
+
+    def set(self, did: str, document: 'DidDocument') -> None:
+        with self._lock:
+            super().set(did, document)
+            self._cache.move_to_end(did)
+            while len(self._cache) > self._max_entries:
+                self._cache.popitem(last=False)
+
+    def get(self, did: str) -> t.Optional['CachedDidResult']:
+        with self._lock:
+            if did in self._cache:
+                self._cache.move_to_end(did)
+            return super().get(did)
+
+    def delete(self, did: str) -> None:
+        with self._lock:
+            self._cache.pop(did, None)
+
+    def clear(self) -> None:
+        with self._lock:
+            super().clear()
+
+
+_CACHE = _BoundedDidCache(_CACHE_MAX_ENTRIES)
 _ID_RESOLVER = IdResolver(cache=_CACHE)
 
 _AUTHORIZATION_HEADER_NAME = 'Authorization'
@@ -44,7 +86,7 @@ def validate_auth(request: 'Request') -> str:
     try:
         # "own_did" binds the token to this service by checking the "aud" claim.
         payload = verify_jwt(jwt, _ID_RESOLVER.did.resolve_atproto_key, own_did=config.SERVICE_DID)
-    except InvalidTokenError as e:
+    except AtProtocolError as e:
         raise AuthorizationError(f'Invalid token: {e}') from e
 
     # The "lxm" claim binds the token to a single XRPC method

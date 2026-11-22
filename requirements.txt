@@ -1,5 +1,5 @@
-atproto==0.0.71
-libipld~=3.4
+atproto==0.0.75
+libipld~=3.5
 peewee~=4.3
 Flask~=3.1
 python-dotenv~=1.2.2
